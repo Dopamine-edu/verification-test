@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Dopamine Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #6c5ce7;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-weight: 600;
+            font-size: 24px;
+        }
+        
+        .form-container {
+            padding: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: #6c5ce7;
+            outline: none;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5649c5;
+        }
+        
+        .verification-options {
+            display: none;
+            margin-top: 25px;
+        }
+        
+        .option-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        .option-card h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .option-card p {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .telegram-btn {
+            background: #0088cc;
+        }
+        
+        .telegram-btn:hover {
+            background: #0077b3;
+        }
+        
+        .email-btn {
+            background: #6c5ce7;
+        }
+        
+        .email-btn:hover {
+            background: #5649c5;
+        }
+        
+        .back-btn {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+        
+        .back-btn:hover {
+            background: #5a6268;
+        }
+        
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loader div {
+            width: 12px;
+            height: 12px;
+            background: #6c5ce7;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 4px;
+            animation: loader 1.2s infinite ease-in-out both;
+        }
+        
+        .loader div:nth-child(1) { animation-delay: -0.32s; }
+        .loader div:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes loader {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Create Your Account</h1>
+        </div>
+        
+        <div class="form-container">
+            <div id="statusMessage" class="status-message"></div>
+            
+            <div id="signupForm">
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="Enter your phone number" required>
+                </div>
+                
+                <button id="nextBtn" class="btn">Next</button>
+            </div>
+            
+            <div class="loader" id="loader">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            
+            <div id="verificationOptions" class="verification-options">
+                <div class="option-card">
+                    <h3>Verify with Email</h3>
+                    <p>We'll send a verification link to your email address</p>
+                    <button id="emailVerifyBtn" class="btn email-btn">Send Verification Email</button>
+                </div>
+                
+                <div class="option-card">
+                    <h3>Verify with Phone</h3>
+                    <p>Verify via Telegram using your phone number</p>
+                    <button id="telegramVerifyBtn" class="btn telegram-btn">Verify via Telegram</button>
+                </div>
+                
+                <button id="backBtn" class="btn back-btn">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase App (core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXXaWWoFqn6MpH6IWSm6CGaqUJzAmzbzA",
+            authDomain: "dopamine-quiz.firebaseapp.com",
+            projectId: "dopamine-quiz",
+            storageBucket: "dopamine-quiz.firebasestorage.app",
+            messagingSenderId: "822531459966",
+            appId: "1:822531459966:web:8e7d2385090e997eb1c12f",
+            measurementId: "G-6TWRMVGB18"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // DOM elements
+        const signupForm = document.getElementById('signupForm');
+        const verificationOptions = document.getElementById('verificationOptions');
+        const nextBtn = document.getElementById('nextBtn');
+        const backBtn = document.getElementById('backBtn');
+        const emailVerifyBtn = document.getElementById('emailVerifyBtn');
+        const telegramVerifyBtn = document.getElementById('telegramVerifyBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const loader = document.getElementById('loader');
+
+        let userEmail = '';
+        let userPhone = '';
+        let userId = '';
+
+        // Show status message
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message ' + type;
+            statusMessage.style.display = 'block';
+        }
+
+        // Show loader
+        function showLoader(show) {
+            loader.style.display = show ? 'block' : 'none';
+        }
+
+        // Next button click handler
+        nextBtn.addEventListener('click', async () => {
+            userEmail = document.getElementById('email').value;
+            userPhone = document.getElementById('phone').value;
+            
+            if (!userEmail || !userPhone) {
+                showStatus('Please fill in all fields', 'error');
+                return;
+            }
+            
+            showLoader(true);
+            
+            try {
+                // Create user in Firebase Auth (without password for now)
+                const userCredential = await auth.createUserWithEmailAndPassword(userEmail, generateTempPassword());
+                userId = userCredential.user.uid;
+                
+                // Save user data to Firestore
+                await db.collection('users').doc(userId).set({
+                    email: userEmail,
+                    phone: userPhone,
+                    emailVerified: false,
+                    phoneVerified: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Hide signup form and show verification options
+                signupForm.style.display = 'none';
+                verificationOptions.style.display = 'block';
+                showLoader(false);
+                
+            } catch (error) {
+                showLoader(false);
+                if (error.code === 'auth/email-already-in-use') {
+                    // Try to sign in instead
+                    try {
+                        const userCredential = await auth.signInWithEmailAndPassword(userEmail, generateTempPassword());
+                        userId = userCredential.user.uid;
+                        
+                        // Hide signup form and show verification options
+                        signupForm.style.display = 'none';
+                        verificationOptions.style.display = 'block';
+                        showLoader(false);
+                    } catch (signInError) {
+                        showStatus('Error accessing account: ' + signInError.message, 'error');
+                    }
+                } else {
+                    showStatus('Error creating account: ' + error.message, 'error');
+                }
+            }
+        });
+
+        // Generate a temporary password for Firebase Auth
+        function generateTempPassword() {
+            return Math.random().toString(36).slice(-10) + 'A1!'; // Add special chars to meet password requirements
+        }
+
+        // Back button click handler
+        backBtn.addEventListener('click', () => {
+            verificationOptions.style.display = 'none';
+            signupForm.style.display = 'block';
+        });
+
+        // Email verification button click handler
+        emailVerifyBtn.addEventListener('click', async () => {
+            showLoader(true);
+            
+            try {
+                const user = auth.currentUser;
+                await user.sendEmailVerification();
+                
+                showLoader(false);
+                showStatus('Verification email sent. Please check your inbox.', 'success');
+                
+                // Start checking for email verification
+                checkEmailVerification();
+                
+            } catch (error) {
+                showLoader(false);
+                showStatus('Error sending verification email: ' + error.message, 'error');
+            }
+        });
+
+        // Check email verification status
+        function checkEmailVerification() {
+            const interval = setInterval(async () => {
+                await auth.currentUser.reload();
+                const user = auth.currentUser;
+                
+                if (user.emailVerified) {
+                    clearInterval(interval);
+                    
+                    // Update Firestore
+                    await db.collection('users').doc(user.uid).update({
+                        emailVerified: true
+                    });
+                    
+                    showStatus('Email verified successfully!', 'success');
+                    // Proceed to the next step (e.g., redirect to app)
+                }
+            }, 3000);
+        }
+
+        // Telegram verification button click handler
+        telegramVerifyBtn.addEventListener('click', async () => {
+            showLoader(true);
+            
+            try {
+                // Generate a unique code for Telegram verification
+                const telegramCode = 'TG_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                
+                // Save the code to Firestore using the user's UID as document ID
+                // This ensures the user has permission to write to this document
+                await db.collection('telegramVerifications').doc(telegramCode).set({
+                    userId: userId,
+                    phone: userPhone,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Create the Telegram bot URL
+                const telegramURL = `https://t.me/dopamineverifybot?start=${telegramCode}`;
+                
+                // Open Telegram (or show instructions if on desktop)
+                if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                    window.location.href = telegramURL;
+                } else {
+                    showStatus(`Please open this link in Telegram: ${telegramURL}`, 'info');
+                }
+                
+                showLoader(false);
+                
+                // Start checking for phone verification
+                checkPhoneVerification();
+                
+            } catch (error) {
+                showLoader(false);
+                showStatus('Error initiating Telegram verification: ' + error.message, 'error');
+            }
+        });
+
+        // Check phone verification status
+        function checkPhoneVerification() {
+            const interval = setInterval(async () => {
+                try {
+                    const userDoc = await db.collection('users').doc(userId).get();
+                    
+                    if (userDoc.exists && userDoc.data().phoneVerified) {
+                        clearInterval(interval);
+                        showStatus('Phone number verified successfully!', 'success');
+                        // Proceed to the next step (e.g., redirect to app)
+                    }
+                } catch (error) {
+                    console.error('Error checking phone verification:', error);
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
