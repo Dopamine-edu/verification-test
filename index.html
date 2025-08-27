@@ -189,6 +189,15 @@
             40% { transform: scale(1); }
         }
         
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+            display: none;
+        }
+        
         @media (max-width: 480px) {
             .container {
                 border-radius: 10px;
@@ -217,7 +226,7 @@
                 
                 <div class="input-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" placeholder="Enter your phone number" required>
+                    <input type="tel" id="phone" placeholder="Enter your phone number (with country code)" required>
                 </div>
                 
                 <button id="nextBtn" class="btn">Next</button>
@@ -243,6 +252,11 @@
                 </div>
                 
                 <button id="backBtn" class="btn back-btn">Back</button>
+            </div>
+            
+            <div class="debug-info" id="debugInfo">
+                <h4>Debug Information</h4>
+                <pre id="debugContent"></pre>
             </div>
         </div>
     </div>
@@ -280,6 +294,8 @@
         const telegramVerifyBtn = document.getElementById('telegramVerifyBtn');
         const statusMessage = document.getElementById('statusMessage');
         const loader = document.getElementById('loader');
+        const debugInfo = document.getElementById('debugInfo');
+        const debugContent = document.getElementById('debugContent');
 
         let userEmail = '';
         let userPhone = '';
@@ -290,6 +306,12 @@
             statusMessage.textContent = message;
             statusMessage.className = 'status-message ' + type;
             statusMessage.style.display = 'block';
+        }
+
+        // Show debug information
+        function showDebugInfo(data) {
+            debugContent.textContent = JSON.stringify(data, null, 2);
+            debugInfo.style.display = 'block';
         }
 
         // Show loader
@@ -307,10 +329,16 @@
                 return;
             }
             
+            // Ensure phone number has country code
+            if (!userPhone.startsWith('+')) {
+                showStatus('Please include country code in your phone number (e.g., +1234567890)', 'error');
+                return;
+            }
+            
             showLoader(true);
             
             try {
-                // Create user in Firebase Auth (without password for now)
+                // Create user in Firebase Auth
                 const userCredential = await auth.createUserWithEmailAndPassword(userEmail, generateTempPassword());
                 userId = userCredential.user.uid;
                 
@@ -328,6 +356,13 @@
                 verificationOptions.style.display = 'block';
                 showLoader(false);
                 
+                showDebugInfo({
+                    userId: userId,
+                    email: userEmail,
+                    phone: userPhone,
+                    status: 'user_created'
+                });
+                
             } catch (error) {
                 showLoader(false);
                 if (error.code === 'auth/email-already-in-use') {
@@ -340,11 +375,28 @@
                         signupForm.style.display = 'none';
                         verificationOptions.style.display = 'block';
                         showLoader(false);
+                        
+                        showDebugInfo({
+                            userId: userId,
+                            email: userEmail,
+                            phone: userPhone,
+                            status: 'existing_user_signed_in'
+                        });
                     } catch (signInError) {
                         showStatus('Error accessing account: ' + signInError.message, 'error');
+                        showDebugInfo({
+                            error: signInError.message,
+                            code: signInError.code,
+                            status: 'sign_in_error'
+                        });
                     }
                 } else {
                     showStatus('Error creating account: ' + error.message, 'error');
+                    showDebugInfo({
+                        error: error.message,
+                        code: error.code,
+                        status: 'create_user_error'
+                    });
                 }
             }
         });
@@ -358,6 +410,7 @@
         backBtn.addEventListener('click', () => {
             verificationOptions.style.display = 'none';
             signupForm.style.display = 'block';
+            debugInfo.style.display = 'none';
         });
 
         // Email verification button click handler
@@ -377,6 +430,11 @@
             } catch (error) {
                 showLoader(false);
                 showStatus('Error sending verification email: ' + error.message, 'error');
+                showDebugInfo({
+                    error: error.message,
+                    code: error.code,
+                    status: 'email_verification_error'
+                });
             }
         });
 
@@ -409,15 +467,22 @@
                 const telegramCode = 'TG_' + Math.random().toString(36).substr(2, 9).toUpperCase();
                 
                 // Save the code to Firestore using the user's UID as document ID
-                // This ensures the user has permission to write to this document
                 await db.collection('telegramVerifications').doc(telegramCode).set({
                     userId: userId,
-                    phone: userPhone,
+                    phone: userPhone.replace('+', ''), // Remove + for easier matching
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
                 // Create the Telegram bot URL
                 const telegramURL = `https://t.me/dopamineverifybot?start=${telegramCode}`;
+                
+                showDebugInfo({
+                    telegramCode: telegramCode,
+                    telegramURL: telegramURL,
+                    userId: userId,
+                    phone: userPhone,
+                    status: 'telegram_verification_initiated'
+                });
                 
                 // Open Telegram (or show instructions if on desktop)
                 if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
@@ -434,6 +499,11 @@
             } catch (error) {
                 showLoader(false);
                 showStatus('Error initiating Telegram verification: ' + error.message, 'error');
+                showDebugInfo({
+                    error: error.message,
+                    code: error.code,
+                    status: 'telegram_verification_error'
+                });
             }
         });
 
