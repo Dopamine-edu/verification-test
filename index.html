@@ -297,6 +297,26 @@
         const debugInfo = document.getElementById('debugInfo');
         const debugContent = document.getElementById('debugContent');
 
+                // Add this function to your web app
+        function normalizePhoneNumber(phoneNumber) {
+            if (!phoneNumber) return "";
+            
+            // Remove all non-digit characters except leading +
+            if (phoneNumber.startsWith('+')) {
+                return '+' + phoneNumber.slice(1).replace(/\D/g, '');
+            } else {
+                return phoneNumber.replace(/\D/g, '');
+            }
+        }
+        
+        // Use it when saving the phone number
+        const normalizedPhone = normalizePhoneNumber(userPhone);
+        await db.collection('telegramVerifications').doc(telegramCode).set({
+            userId: userId,
+            phone: normalizedPhone, // Store normalized phone number
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
         let userEmail = '';
         let userPhone = '';
         let userId = '';
